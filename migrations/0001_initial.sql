@@ -5,7 +5,8 @@
 
 -- Users -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
-    uuid          UUID        PRIMARY KEY,
+    uuid          TEXT        PRIMARY KEY NOT NULL,
+    -- uuid          UUID        PRIMARY KEY,
     phone         TEXT,
     email         TEXT        NOT NULL UNIQUE,
     first_name    TEXT        NOT NULL,
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Tasks -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tasks (
-    id               SERIAL      PRIMARY KEY,
+    id               BIGINT      PRIMARY KEY NOT NULL,
     name             TEXT        NOT NULL,
     time_for_booking BIGINT      NOT NULL,   -- seconds
     date_created     BIGINT,
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- Employees -------------------------------------------------------
 CREATE TABLE IF NOT EXISTS employees (
-    id            TEXT        PRIMARY KEY,
+    id            TEXT        PRIMARY KEY NOT NULL,
     first_name    TEXT        NOT NULL,
     last_name     TEXT        NOT NULL,
     phone         TEXT        NOT NULL,
@@ -37,8 +38,8 @@ CREATE TABLE IF NOT EXISTS employees (
 
 -- Appointment states (seeded) ------------------------------------
 CREATE TABLE IF NOT EXISTS appointment_states (
-    id   INT  PRIMARY KEY,
-    name TEXT NOT NULL
+    id   BIGINT  PRIMARY KEY,
+    name TEXT    NOT NULL
 );
 
 INSERT INTO appointment_states (id, name) VALUES
@@ -51,13 +52,13 @@ ON CONFLICT DO NOTHING;
 
 -- Appointments ----------------------------------------------------
 CREATE TABLE IF NOT EXISTS appointments (
-    uuid                  UUID    PRIMARY KEY,
+    uuid                  TEXT    PRIMARY KEY,
     user_uuid             TEXT    NOT NULL,
-    task_id               INT     NOT NULL REFERENCES tasks(id),
+    task_id               BIGINT  NOT NULL REFERENCES tasks(id),
     employee_id           TEXT    REFERENCES employees(id),
     start_time            BIGINT  NOT NULL,
     length                BIGINT  NOT NULL,
-    appointment_state_id  INT     NOT NULL REFERENCES appointment_states(id) DEFAULT 0,
+    appointment_state_id  BIGINT  NOT NULL REFERENCES appointment_states(id) DEFAULT 0,
     date_created          BIGINT,
     last_modified         BIGINT,
 
@@ -74,7 +75,7 @@ CREATE INDEX IF NOT EXISTS idx_appointments_start_time ON appointments(start_tim
 
 -- Appointment availability ----------------------------------------
 CREATE TABLE IF NOT EXISTS appointment_availability (
-    id          SERIAL  PRIMARY KEY,
+    id          BIGINT  PRIMARY KEY NOT NULL,
     employee_id TEXT    REFERENCES employees(id),
     start_time  BIGINT  NOT NULL,
     end_time    BIGINT  NOT NULL,

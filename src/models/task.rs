@@ -4,7 +4,7 @@ use sqlx::FromRow;
 /// Mirrors the frontend `Task` class.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Task {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     /// Duration in seconds that should be booked for this task.
     pub time_for_booking: i64,

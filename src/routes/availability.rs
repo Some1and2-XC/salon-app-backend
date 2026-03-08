@@ -23,9 +23,9 @@ pub async fn list_availability(
         AppointmentAvailability,
         r#"SELECT id, employee_id, start_time, end_time
            FROM appointment_availability
-           WHERE ($1::text   IS NULL OR employee_id = $1)
-             AND ($2::bigint IS NULL OR start_time  >= $2)
-             AND ($3::bigint IS NULL OR end_time    <= $3)
+           WHERE ($1   IS NULL OR employee_id = $1)
+             AND ($2 IS NULL OR start_time  >= $2)
+             AND ($3 IS NULL OR end_time    <= $3)
            ORDER BY start_time"#,
         params.employee_id,
         params.from,

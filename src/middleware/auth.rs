@@ -133,7 +133,7 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
         // Check if this Firebase UID has admin privileges in our DB.
         let is_admin = sqlx::query_scalar!(
-            "SELECT admin FROM users WHERE uuid = $1::uuid",
+            "SELECT admin FROM users WHERE uuid = $1",
             claims.sub
         )
         .fetch_optional(&state.db)

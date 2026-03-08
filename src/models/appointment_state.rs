@@ -4,7 +4,7 @@ use sqlx::FromRow;
 /// Mirrors the frontend `AppointmentState` class and its constants.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct AppointmentState {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
 }
 
@@ -19,12 +19,12 @@ pub enum KnownState {
 }
 
 impl KnownState {
-    pub fn id(self) -> i32 {
-        self as i32
+    pub fn id(self) -> i64 {
+        self as i64
     }
 
     /// Returns `true` when an `employee_id` is required (mirrors frontend `validate()`).
-    pub fn requires_employee(id: i32) -> bool {
+    pub fn requires_employee(id: i64) -> bool {
         matches!(
             id,
             x if x == KnownState::Accepted.id()

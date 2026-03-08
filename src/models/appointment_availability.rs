@@ -4,7 +4,7 @@ use sqlx::FromRow;
 /// Mirrors the frontend `AppointmentAvailability` class.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct AppointmentAvailability {
-    pub id: i32,
+    pub id: i64,
     /// `None` means the slot is open to any employee.
     pub employee_id: Option<String>,
     /// Unix timestamp (milliseconds).

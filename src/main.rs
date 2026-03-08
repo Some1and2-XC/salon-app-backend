@@ -9,8 +9,8 @@ use axum::{
 use dotenv::dotenv;
 use reqwest::Client;
 // use sqlx::postgres::PgPoolOptions;
-use sqlx::sqlite::SqlitePoolOptions;
-use std::env;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+use std::{env, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -54,9 +54,20 @@ async fn main() -> anyhow::Result<()> {
     //     .connect(&database_url)
     //     .await?;
 
+    let connect_opts = SqliteConnectOptions::from_str(&database_url)?
+        .create_if_missing(true)
+        ;
+
     let db = SqlitePoolOptions::new()
         .max_connections(5)
-        .connect(&database_url)
+        .after_connect(|conn, _| Box::pin(async move {
+            sqlx::query("PRAGMA foreign_keys = ON;")
+                .execute(conn)
+                .await?;
+            Ok(())
+        }))
+        .connect_with(connect_opts)
+        // .connect(&database_url)
         .await?
         ;
 

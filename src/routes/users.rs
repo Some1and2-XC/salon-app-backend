@@ -21,7 +21,7 @@ pub async fn get_me(
         User,
         r#"SELECT uuid, phone, email, first_name, last_name,
                   date_created, last_modified, admin
-           FROM users WHERE uuid = $1::uuid"#,
+           FROM users WHERE uuid = $1"#,
         auth.uid
     )
     .fetch_optional(&state.db)

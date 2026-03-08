@@ -34,11 +34,11 @@ pub async fn list_appointments(
         r#"SELECT uuid, user_uuid, task_id, employee_id, start_time, length,
                   appointment_state_id, date_created, last_modified
            FROM appointments
-           WHERE ($1::text IS NULL OR user_uuid = $1)
-             AND ($2::text IS NULL OR employee_id = $2)
-             AND ($3::int  IS NULL OR appointment_state_id = $3)
-             AND ($4::bigint IS NULL OR start_time >= $4)
-             AND ($5::bigint IS NULL OR start_time <= $5)
+           WHERE ($1 IS NULL OR user_uuid = $1)
+             AND ($2 IS NULL OR employee_id = $2)
+             AND ($3  IS NULL OR appointment_state_id = $3)
+             AND ($4 IS NULL OR start_time >= $4)
+             AND ($5 IS NULL OR start_time <= $5)
            ORDER BY start_time"#,
         user_filter,
         params.employee_id,

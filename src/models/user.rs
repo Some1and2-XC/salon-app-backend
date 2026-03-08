@@ -32,7 +32,8 @@ pub enum PhoneError {
 /// Mirrors the frontend `User` class.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct User {
-    pub uuid: Option<Uuid>,
+    // pub uuid: Option<Uuid>,
+    pub uuid: Option<String>,
     /// Stored as plain text in the DB; wrapped in Phone for validation at the API boundary.
     pub phone: Option<String>,
     pub email: String,

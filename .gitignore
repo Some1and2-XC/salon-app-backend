@@ -5,4 +5,9 @@ target/
 
 .env
 
+# DB
+.sqlx/*
+db.sqlite
+db.sqlite*
+
 docker/*

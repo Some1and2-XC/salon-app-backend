@@ -1,0 +1,8 @@
+target/
+*.sublime-project
+*.sublimelinterrc
+*.sublime-workspace
+
+.env
+
+docker/*

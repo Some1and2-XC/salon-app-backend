@@ -2,13 +2,11 @@ mod middleware;
 mod models;
 mod routes;
 
-use axum::body::HttpBody;
 use dotenv::dotenv;
 use reqwest::Client;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use utoipa::openapi::security::HttpBuilder;
 use utoipa_axum::{router::OpenApiRouter, routes};
-use utoipa_redoc::{Redoc, Servable};
 use std::{env, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -105,12 +103,12 @@ async fn main() -> anyhow::Result<()> {
 
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()))
-        .merge(Redoc::with_url("/redoc", api.clone()))
+        // .merge(Redoc::with_url("/redoc", api.clone()))
         ;
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;
     tracing::info!("Listening on http://0.0.0.0:{port}");
-    tracing::info!("API Docs can be found at: http://0.0.0.0:{port}/redoc");
+    tracing::info!("API Docs can be found at: http://0.0.0.0:{port}/swagger-ui");
     axum::serve(listener, router.into_make_service()).await?;
     // axum::serve(listener, router.into_make_service())?;
 

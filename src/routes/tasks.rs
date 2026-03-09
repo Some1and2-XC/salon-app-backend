@@ -18,7 +18,7 @@ pub async fn list_tasks(
 ) -> Result<Json<Vec<Task>>, (StatusCode, Json<serde_json::Value>)> {
     let tasks = sqlx::query_as!(
         Task,
-        "SELECT id, name, time_for_booking, date_created, last_modified FROM tasks ORDER BY id"
+        "SELECT id, name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified FROM tasks ORDER BY id"
     )
     .fetch_all(&state.db)
     .await
@@ -34,7 +34,7 @@ pub async fn get_task(
 ) -> Result<Json<Task>, (StatusCode, Json<serde_json::Value>)> {
     let task = sqlx::query_as!(
         Task,
-        "SELECT id, name, time_for_booking, date_created, last_modified FROM tasks WHERE id = $1",
+        "SELECT id, name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified FROM tasks WHERE id = $1",
         id
     )
     .fetch_optional(&state.db)
@@ -61,11 +61,13 @@ pub async fn create_task(
     let now = Utc::now().timestamp_millis();
     let task = sqlx::query_as!(
         Task,
-        r#"INSERT INTO tasks (name, time_for_booking, date_created, last_modified)
-           VALUES ($1, $2, $3, $3)
-           RETURNING id, name, time_for_booking, date_created, last_modified"#,
+        r#"INSERT INTO tasks (name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified)
+           VALUES ($1, $2, $3, $4, $5, $5)
+           RETURNING id, name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified"#,
         req.name,
         req.time_for_booking,
+        req.price_cad_cent,
+        req.task_category_id,
         now,
     )
     .fetch_one(&state.db)
@@ -92,12 +94,16 @@ pub async fn update_task(
         r#"UPDATE tasks
            SET name             = COALESCE($2, name),
                time_for_booking = COALESCE($3, time_for_booking),
-               last_modified    = $4
+               price_cad_cent   = COALESCE($4, price_cad_cent),
+               task_category_id = COALESCE($5, task_category_id),
+               last_modified    = $6
            WHERE id = $1
-           RETURNING id, name, time_for_booking, date_created, last_modified"#,
+           RETURNING id, name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified"#,
         id,
         req.name,
         req.time_for_booking,
+        req.price_cad_cent,
+        req.task_category_id,
         now,
     )
     .fetch_optional(&state.db)

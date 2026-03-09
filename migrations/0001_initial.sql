@@ -16,14 +16,33 @@ CREATE TABLE IF NOT EXISTS users (
     admin         BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
+-- Task Categories (seeded) ----------------------------------------
+CREATE TABLE IF NOT EXISTS task_categories (
+    id      BIGINT     PRIMARY KEY,
+    name    TEXT       NOT NULL
+);
+
+INSERT INTO task_categories (id, name) VALUES
+    (0, "Manicure"),
+    (1, "Pedicure"),
+    (2, "Extension"),
+    (3, "Kids"),
+    (4, "Add-On Service"),
+    (5, "Special Package")
+ON CONFLICT DO NOTHING;
+
 -- Tasks -----------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tasks (
-    id               BIGINT      PRIMARY KEY NOT NULL,
-    name             TEXT        NOT NULL,
-    time_for_booking BIGINT      NOT NULL,   -- seconds
-    date_created     BIGINT,
-    last_modified    BIGINT
+    id                 BIGINT      PRIMARY KEY NOT NULL,
+    name               TEXT        NOT NULL,
+    time_for_booking   BIGINT      NOT NULL,   -- seconds
+    price_cad_cent     BIGINT, -- Cents
+    task_category_id   BIGINT      REFERENCES task_categories(id), -- Nullable but subject to change
+    date_created       BIGINT,
+    last_modified      BIGINT
 );
+
+CREATE INDEX IF NOT EXISTS idx_tasks_task_category_id ON task_categories(id);
 
 -- Employees -------------------------------------------------------
 CREATE TABLE IF NOT EXISTS employees (

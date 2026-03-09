@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 
 /// Mirrors the frontend `AppointmentAvailability` class.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct AppointmentAvailability {
     pub id: i64,
     /// `None` means the slot is open to any employee.
@@ -13,14 +14,14 @@ pub struct AppointmentAvailability {
     pub end_time: i64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateAvailabilityRequest {
     pub employee_id: Option<String>,
     pub start_time: i64,
     pub end_time: i64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct QueryAvailabilityParams {
     /// Filter by employee.
     pub employee_id: Option<String>,

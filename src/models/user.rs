@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use uuid::Uuid;
+use utoipa::ToSchema;
 
 /// A validated phone number, always serialized as a string.
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
@@ -30,7 +30,7 @@ pub enum PhoneError {
 }
 
 /// Mirrors the frontend `User` class.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct User {
     // pub uuid: Option<Uuid>,
     pub uuid: Option<String>,
@@ -47,7 +47,7 @@ pub struct User {
 }
 
 /// The subset of `User` fields a client is allowed to supply on creation / update.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateUserRequest {
     pub phone: Option<String>,
     pub email: String,
@@ -55,7 +55,7 @@ pub struct CreateUserRequest {
     pub last_name: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateUserRequest {
     pub phone: Option<String>,
     pub email: Option<String>,

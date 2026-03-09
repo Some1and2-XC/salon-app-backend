@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 
 use crate::models::appointment_state::KnownState;
 
 /// Mirrors the frontend `Appointment` class.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct Appointment {
     pub uuid: Option<String>,
     pub user_uuid: String,
@@ -33,7 +34,7 @@ impl Appointment {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateAppointmentRequest {
     pub task_id: i64,
     pub employee_id: Option<String>,
@@ -43,7 +44,7 @@ pub struct CreateAppointmentRequest {
     pub appointment_state_id: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateAppointmentRequest {
     pub employee_id: Option<String>,
     pub start_time: Option<i64>,
@@ -51,7 +52,7 @@ pub struct UpdateAppointmentRequest {
     pub appointment_state_id: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct QueryAppointmentsParams {
     pub user_uuid: Option<String>,
     pub employee_id: Option<String>,

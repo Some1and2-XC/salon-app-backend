@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 
 /// Mirrors the frontend `Employee` class.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct Employee {
     pub id: String,
     pub first_name: String,
@@ -16,7 +17,7 @@ pub struct Employee {
     pub last_modified: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateEmployeeRequest {
     pub id: String,
     pub first_name: String,
@@ -25,7 +26,7 @@ pub struct CreateEmployeeRequest {
     pub email: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateEmployeeRequest {
     pub first_name: Option<String>,
     pub last_name: Option<String>,

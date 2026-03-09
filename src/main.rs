@@ -15,6 +15,41 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use middleware::auth::FirebaseKeyCache;
 
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
+#[derive(OpenApi)]
+#[openapi(paths(
+    // // ── Users ──────────────────────────────────────────────────────────
+    routes::users::get_me,
+    // routes::users::update_me,
+    // routes::users::create_user,
+    // routes::users::get_user_by_id, // adm
+    // // ── Tasks ──────────────────────────────────────────────────────────
+    // routes::tasks::list_tasks,
+    // routes::tasks::create_task,
+    // routes::tasks::get_task,
+    // routes::tasks::update_task,
+    // routes::tasks::delete_task,
+    // // ── Employees ──────────────────────────────────────────────────────
+    // routes::employees::list_employees,
+    // routes::employees::create_employee,
+    // routes::employees::get_employee,
+    // routes::employees::update_employee,
+    // routes::employees::delete_employee,
+    // // ── Appointments ───────────────────────────────────────────────────
+    // routes::appointments::list_appointments,
+    // routes::appointments::create_appointment,
+    // routes::appointments::get_appointment,
+    // routes::appointments::update_appointment,
+    // routes::appointments::delete_appointment,
+    // // ── Availability ───────────────────────────────────────────────────
+    // routes::availability::list_availability,
+    // routes::availability::create_availability,
+    // routes::availability::delete_availability,
+))]
+struct APIDocs;
+
 // ---------------------------------------------------------------------------
 // Shared application state
 // ---------------------------------------------------------------------------
@@ -47,11 +82,6 @@ async fn main() -> anyhow::Result<()> {
     let firebase_project_id =
         env::var("FIREBASE_PROJECT_ID").expect("FIREBASE_PROJECT_ID must be set");
     let port = env::var("PORT").unwrap_or_else(|_| "3000".into());
-
-    // let db = PgPoolOptions::new()
-    //     .max_connections(10)
-    //     .connect(&database_url)
-    //     .await?;
 
     let connect_opts = SqliteConnectOptions::from_str(&database_url)?
         .create_if_missing(true)
@@ -95,6 +125,9 @@ async fn main() -> anyhow::Result<()> {
 
 fn build_router(state: AppState) -> Router {
     Router::new()
+        // .merge(SwaggerUi::new("/swagger-ui")
+        //     .url("/api-docs/openapi.json", APIDocs::openapi())
+        // )
         // ── Users ──────────────────────────────────────────────────────────
         .route("/users/me", get(routes::users::get_me))
         .route("/users/me", patch(routes::users::update_me))

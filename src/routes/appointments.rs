@@ -36,7 +36,7 @@ pub async fn list_appointments(
            FROM appointments
            WHERE ($1 IS NULL OR user_uuid = $1)
              AND ($2 IS NULL OR employee_id = $2)
-             AND ($3  IS NULL OR appointment_state_id = $3)
+             AND ($3 IS NULL OR appointment_state_id = $3)
              AND ($4 IS NULL OR start_time >= $4)
              AND ($5 IS NULL OR start_time <= $5)
            ORDER BY start_time"#,

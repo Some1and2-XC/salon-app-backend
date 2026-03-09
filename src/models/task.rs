@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utoipa::ToSchema;
 
 /// Mirrors the frontend `Task` class.
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct Task {
     pub id: i64,
     pub name: String,
@@ -18,7 +19,7 @@ pub struct Task {
     pub last_modified: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateTaskRequest {
     pub name: String,
     pub time_for_booking: i64,
@@ -26,7 +27,7 @@ pub struct CreateTaskRequest {
     pub task_category_id: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdateTaskRequest {
     pub name: Option<String>,
     pub time_for_booking: Option<i64>,

@@ -12,6 +12,19 @@ use crate::{
 };
 
 /// GET /users/me — return the authenticated user's own profile.
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    responses(
+        (status = 200, description = "Authenticated user's profile", body = User),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(
+        ("bearer_token" = [])
+    )
+)]
 pub async fn get_me(
     auth: AuthenticatedUser,
     State(state): State<AppState>,

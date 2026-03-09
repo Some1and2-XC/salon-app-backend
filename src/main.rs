@@ -110,6 +110,7 @@ async fn main() -> anyhow::Result<()> {
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;
     tracing::info!("Listening on http://0.0.0.0:{port}");
+    tracing::info!("API Docs can be found at: http://0.0.0.0:{port}/redoc");
     axum::serve(listener, router.into_make_service()).await?;
     // axum::serve(listener, router.into_make_service())?;
 

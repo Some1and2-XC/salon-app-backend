@@ -45,6 +45,17 @@ pub async fn get_me(
 }
 
 /// POST /users — create a user record tied to the Firebase UID.
+#[utoipa::path(
+    post,
+    path = "/users",
+    request_body = CreateUserRequest,
+    responses(
+        (status = 201, description = "User created successfully", body = User),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn create_user(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -73,6 +84,18 @@ pub async fn create_user(
 }
 
 /// PATCH /users/me — update the authenticated user's own profile.
+#[utoipa::path(
+    patch,
+    path = "/users/me",
+    request_body = UpdateUserRequest,
+    responses(
+        (status = 200, description = "User updated successfully", body = User),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn update_me(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -107,6 +130,21 @@ pub async fn update_me(
 }
 
 /// GET /users/:uuid — admin-only: fetch any user.
+#[utoipa::path(
+    get,
+    path = "/users/{uuid}",
+    params(
+        ("uuid" = String, Path, description = "User UUID")
+    ),
+    responses(
+        (status = 200, description = "User found", body = User),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn get_user_by_id(
     auth: AuthenticatedUser,
     State(state): State<AppState>,

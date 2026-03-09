@@ -17,6 +17,17 @@ use crate::{
 };
 
 /// GET /appointments — admins see all; users see only their own.
+#[utoipa::path(
+    get,
+    path = "/appointments",
+    params(QueryAppointmentsParams),
+    responses(
+        (status = 200, description = "List of appointments", body = Vec<Appointment>),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn list_appointments(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -54,10 +65,25 @@ pub async fn list_appointments(
 }
 
 /// GET /appointments/:uuid
+#[utoipa::path(
+    get,
+    path = "/appointments/{uuid}",
+    params(
+        ("uuid" = String, Path, description = "Appointment UUID")
+    ),
+    responses(
+        (status = 200, description = "Appointment found", body = Appointment),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Appointment not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn get_appointment(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
-    Path(uuid): Path<Uuid>,
+    Path(uuid): Path<String>,
 ) -> Result<Json<Appointment>, (StatusCode, Json<serde_json::Value>)> {
     let appt = sqlx::query_as!(
         Appointment,
@@ -80,6 +106,18 @@ pub async fn get_appointment(
 }
 
 /// POST /appointments — authenticated users create appointments for themselves.
+#[utoipa::path(
+    post,
+    path = "/appointments",
+    request_body = CreateAppointmentRequest,
+    responses(
+        (status = 201, description = "Appointment created successfully", body = Appointment),
+        (status = 400, description = "Bad request"),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn create_appointment(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -122,6 +160,23 @@ pub async fn create_appointment(
 }
 
 /// PATCH /appointments/:uuid — users can update their own; admins can update any.
+#[utoipa::path(
+    patch,
+    path = "/appointments/{uuid}",
+    params(
+        ("uuid" = String, Path, description = "Appointment UUID")
+    ),
+    request_body = UpdateAppointmentRequest,
+    responses(
+        (status = 200, description = "Appointment updated successfully", body = Appointment),
+        (status = 400, description = "Bad request"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Appointment not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn update_appointment(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -182,10 +237,25 @@ pub async fn update_appointment(
 }
 
 /// DELETE /appointments/:uuid — users cancel their own; admins delete any.
+#[utoipa::path(
+    delete,
+    path = "/appointments/{uuid}",
+    params(
+        ("uuid" = String, Path, description = "Appointment UUID")
+    ),
+    responses(
+        (status = 204, description = "Appointment deleted successfully"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Appointment not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn delete_appointment(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
-    Path(uuid): Path<Uuid>,
+    Path(uuid): Path<String>,
 ) -> Result<StatusCode, (StatusCode, Json<serde_json::Value>)> {
     let existing = sqlx::query!(
         "SELECT user_uuid FROM appointments WHERE uuid = $1",

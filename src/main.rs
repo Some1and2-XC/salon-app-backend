@@ -2,53 +2,20 @@ mod middleware;
 mod models;
 mod routes;
 
-use axum::{
-    routing::{delete, get, patch, post},
-    Router,
-};
+use axum::body::HttpBody;
 use dotenv::dotenv;
 use reqwest::Client;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+use utoipa::openapi::security::HttpBuilder;
+use utoipa_axum::{router::OpenApiRouter, routes};
+use utoipa_redoc::{Redoc, Servable};
 use std::{env, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use middleware::auth::FirebaseKeyCache;
 
-use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
-
-#[derive(OpenApi)]
-#[openapi(paths(
-    // // ── Users ──────────────────────────────────────────────────────────
-    routes::users::get_me,
-    // routes::users::update_me,
-    // routes::users::create_user,
-    // routes::users::get_user_by_id, // adm
-    // // ── Tasks ──────────────────────────────────────────────────────────
-    // routes::tasks::list_tasks,
-    // routes::tasks::create_task,
-    // routes::tasks::get_task,
-    // routes::tasks::update_task,
-    // routes::tasks::delete_task,
-    // // ── Employees ──────────────────────────────────────────────────────
-    // routes::employees::list_employees,
-    // routes::employees::create_employee,
-    // routes::employees::get_employee,
-    // routes::employees::update_employee,
-    // routes::employees::delete_employee,
-    // // ── Appointments ───────────────────────────────────────────────────
-    // routes::appointments::list_appointments,
-    // routes::appointments::create_appointment,
-    // routes::appointments::get_appointment,
-    // routes::appointments::update_appointment,
-    // routes::appointments::delete_appointment,
-    // // ── Availability ───────────────────────────────────────────────────
-    // routes::availability::list_availability,
-    // routes::availability::create_availability,
-    // routes::availability::delete_availability,
-))]
-struct APIDocs;
 
 // ---------------------------------------------------------------------------
 // Shared application state
@@ -110,11 +77,41 @@ async fn main() -> anyhow::Result<()> {
         firebase_project_id,
     };
 
-    let app = build_router(state);
+    let (router, mut api) = build_router(state).split_for_parts();
+    api.info.title = env!("CARGO_PKG_NAME").to_string();
+    api.info.version = env!("CARGO_PKG_VERSION").to_string();
+    api.info.description = Some("Rust/Axum backend for the appointment booking system, with Firebase Authentication.".to_string());
+    let mut contact = utoipa::openapi::Contact::new();
+    contact.name = Some("Mark Tobin".to_string());
+    contact.email = Some("mr648072@dal.ca".to_string());
+    contact.url = None;
+    contact.extensions = None;
+    api.info.contact = Some(contact);
+    api.info.license = None;
+    api.info.terms_of_service = None;
+
+    if api.components.is_none() {
+        api.components = Some(utoipa::openapi::Components::new());
+    }
+    api.components.as_mut().unwrap().add_security_scheme(
+        "bearer_token",
+        utoipa::openapi::security::SecurityScheme::Http(
+            HttpBuilder::new()
+                .scheme(utoipa::openapi::security::HttpAuthScheme::Bearer)
+                .bearer_format("JWT")
+                .build(),
+        )
+    );
+
+    let router = router
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()))
+        .merge(Redoc::with_url("/redoc", api.clone()))
+        ;
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;
     tracing::info!("Listening on http://0.0.0.0:{port}");
-    axum::serve(listener, app).await?;
+    axum::serve(listener, router.into_make_service()).await?;
+    // axum::serve(listener, router.into_make_service())?;
 
     Ok(())
 }
@@ -123,40 +120,38 @@ async fn main() -> anyhow::Result<()> {
 // Router
 // ---------------------------------------------------------------------------
 
-fn build_router(state: AppState) -> Router {
-    Router::new()
-        // .merge(SwaggerUi::new("/swagger-ui")
-        //     .url("/api-docs/openapi.json", APIDocs::openapi())
-        // )
+fn build_router(state: AppState) -> OpenApiRouter {
+    OpenApiRouter::new()
         // ── Users ──────────────────────────────────────────────────────────
-        .route("/users/me", get(routes::users::get_me))
-        .route("/users/me", patch(routes::users::update_me))
-        .route("/users", post(routes::users::create_user))
-        .route("/users/:uuid", get(routes::users::get_user_by_id)) // admin
-        // ── Tasks ──────────────────────────────────────────────────────────
-        .route("/tasks", get(routes::tasks::list_tasks))
-        .route("/tasks", post(routes::tasks::create_task))
-        .route("/tasks/:id", get(routes::tasks::get_task))
-        .route("/tasks/:id", patch(routes::tasks::update_task))
-        .route("/tasks/:id", delete(routes::tasks::delete_task))
-        // ── Employees ──────────────────────────────────────────────────────
-        .route("/employees", get(routes::employees::list_employees))
-        .route("/employees", post(routes::employees::create_employee))
-        .route("/employees/:id", get(routes::employees::get_employee))
-        .route("/employees/:id", patch(routes::employees::update_employee))
-        .route("/employees/:id", delete(routes::employees::delete_employee))
-        // ── Appointments ───────────────────────────────────────────────────
-        .route("/appointments", get(routes::appointments::list_appointments))
-        .route("/appointments", post(routes::appointments::create_appointment))
-        .route("/appointments/:uuid", get(routes::appointments::get_appointment))
-        .route("/appointments/:uuid", patch(routes::appointments::update_appointment))
-        .route("/appointments/:uuid", delete(routes::appointments::delete_appointment))
-        // ── Availability ───────────────────────────────────────────────────
-        .route("/availability", get(routes::availability::list_availability))
-        .route("/availability", post(routes::availability::create_availability))
-        .route("/availability/:id", delete(routes::availability::delete_availability))
+        .routes(routes!(routes::users::get_me))
+        .routes(routes!(routes::users::update_me))
+        .routes(routes!(routes::users::create_user))
+        .routes(routes!(routes::users::get_user_by_id)) // admin
+        // // ── Tasks ──────────────────────────────────────────────────────────
+        .routes(routes!(routes::tasks::list_tasks))
+        .routes(routes!(routes::tasks::create_task))
+        .routes(routes!(routes::tasks::get_task))
+        .routes(routes!(routes::tasks::update_task))
+        .routes(routes!(routes::tasks::delete_task))
+        // // ── Employees ──────────────────────────────────────────────────────
+        .routes(routes!(routes::employees::list_employees))
+        .routes(routes!(routes::employees::create_employee))
+        .routes(routes!(routes::employees::get_employee))
+        .routes(routes!(routes::employees::update_employee))
+        .routes(routes!(routes::employees::delete_employee))
+        // // ── Appointments ───────────────────────────────────────────────────
+        .routes(routes!(routes::appointments::list_appointments))
+        .routes(routes!(routes::appointments::create_appointment))
+        .routes(routes!(routes::appointments::get_appointment))
+        .routes(routes!(routes::appointments::update_appointment))
+        .routes(routes!(routes::appointments::delete_appointment))
+        // // ── Availability ───────────────────────────────────────────────────
+        .routes(routes!(routes::availability::list_availability))
+        .routes(routes!(routes::availability::create_availability))
+        .routes(routes!(routes::availability::delete_availability))
         // ── Middleware ─────────────────────────────────────────────────────
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
+
         .with_state(state)
 }

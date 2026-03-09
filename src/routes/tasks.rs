@@ -13,6 +13,14 @@ use crate::{
 };
 
 /// GET /tasks — list all tasks (public).
+#[utoipa::path(
+    get,
+    path = "/tasks",
+    responses(
+        (status = 200, description = "List of all tasks", body = Vec<Task>),
+        (status = 500, description = "Internal server error"),
+    )
+)]
 pub async fn list_tasks(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<Task>>, (StatusCode, Json<serde_json::Value>)> {
@@ -28,6 +36,18 @@ pub async fn list_tasks(
 }
 
 /// GET /tasks/:id
+#[utoipa::path(
+    get,
+    path = "/tasks/{id}",
+    params(
+        ("id" = i32, Path, description = "Task ID")
+    ),
+    responses(
+        (status = 200, description = "Task found", body = Task),
+        (status = 404, description = "Task not found"),
+        (status = 500, description = "Internal server error"),
+    )
+)]
 pub async fn get_task(
     State(state): State<AppState>,
     Path(id): Path<i32>,
@@ -46,6 +66,19 @@ pub async fn get_task(
 }
 
 /// POST /tasks — admin only.
+#[utoipa::path(
+    post,
+    path = "/tasks",
+    request_body = CreateTaskRequest,
+    responses(
+        (status = 201, description = "Task created successfully", body = Task),
+        (status = 400, description = "Bad request"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn create_task(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -78,6 +111,22 @@ pub async fn create_task(
 }
 
 /// PATCH /tasks/:id — admin only.
+#[utoipa::path(
+    patch,
+    path = "/tasks/{id}",
+    params(
+        ("id" = i32, Path, description = "Task ID")
+    ),
+    request_body = UpdateTaskRequest,
+    responses(
+        (status = 200, description = "Task updated successfully", body = Task),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Task not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn update_task(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -115,6 +164,21 @@ pub async fn update_task(
 }
 
 /// DELETE /tasks/:id — admin only.
+#[utoipa::path(
+    delete,
+    path = "/tasks/{id}",
+    params(
+        ("id" = i32, Path, description = "Task ID")
+    ),
+    responses(
+        (status = 204, description = "Task deleted successfully"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Task not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn delete_task(
     auth: AuthenticatedUser,
     State(state): State<AppState>,

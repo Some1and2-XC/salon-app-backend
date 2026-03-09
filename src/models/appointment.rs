@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 
 use crate::models::appointment_state::KnownState;
 
@@ -52,7 +52,7 @@ pub struct UpdateAppointmentRequest {
     pub appointment_state_id: Option<i64>,
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, IntoParams)]
 pub struct QueryAppointmentsParams {
     pub user_uuid: Option<String>,
     pub employee_id: Option<String>,

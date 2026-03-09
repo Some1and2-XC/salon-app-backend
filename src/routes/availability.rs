@@ -14,6 +14,17 @@ use crate::{
 };
 
 /// GET /availability — authenticated users query open slots.
+#[utoipa::path(
+    get,
+    path = "/availability",
+    params(QueryAvailabilityParams),
+    responses(
+        (status = 200, description = "List of availability slots", body = Vec<AppointmentAvailability>),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn list_availability(
     _auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -39,6 +50,18 @@ pub async fn list_availability(
 }
 
 /// POST /availability — admin only.
+#[utoipa::path(
+    post,
+    path = "/availability",
+    request_body = CreateAvailabilityRequest,
+    responses(
+        (status = 201, description = "Availability slot created successfully", body = AppointmentAvailability),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn create_availability(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -65,6 +88,21 @@ pub async fn create_availability(
 }
 
 /// DELETE /availability/:id — admin only.
+#[utoipa::path(
+    delete,
+    path = "/availability/{id}",
+    params(
+        ("id" = i32, Path, description = "Availability slot ID")
+    ),
+    responses(
+        (status = 204, description = "Availability slot deleted successfully"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Availability slot not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn delete_availability(
     auth: AuthenticatedUser,
     State(state): State<AppState>,

@@ -29,7 +29,7 @@ pub enum PhoneError {
     InvalidLength(usize),
 }
 
-/// Mirrors the frontend `User` class.
+/// The "User" server representation.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct User {
     // pub uuid: Option<Uuid>,

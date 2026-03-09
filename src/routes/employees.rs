@@ -16,6 +16,16 @@ use crate::{
 };
 
 /// GET /employees — authenticated users can list employees.
+#[utoipa::path(
+    get,
+    path = "/employees",
+    responses(
+        (status = 200, description = "List of all employees", body = Vec<Employee>),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn list_employees(
     _auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -33,6 +43,20 @@ pub async fn list_employees(
 }
 
 /// GET /employees/:id
+#[utoipa::path(
+    get,
+    path = "/employees/{id}",
+    params(
+        ("id" = String, Path, description = "Employee ID")
+    ),
+    responses(
+        (status = 200, description = "Employee found", body = Employee),
+        (status = 401, description = "Unauthorized"),
+        (status = 404, description = "Employee not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn get_employee(
     _auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -53,6 +77,19 @@ pub async fn get_employee(
 }
 
 /// POST /employees — admin only.
+#[utoipa::path(
+    post,
+    path = "/employees",
+    request_body = CreateEmployeeRequest,
+    responses(
+        (status = 201, description = "Employee created successfully", body = Employee),
+        (status = 400, description = "Bad request"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn create_employee(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -85,6 +122,23 @@ pub async fn create_employee(
 }
 
 /// PATCH /employees/:id — admin only.
+#[utoipa::path(
+    patch,
+    path = "/employees/{id}",
+    params(
+        ("id" = String, Path, description = "Employee ID")
+    ),
+    request_body = UpdateEmployeeRequest,
+    responses(
+        (status = 200, description = "Employee updated successfully", body = Employee),
+        (status = 400, description = "Bad request"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Employee not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn update_employee(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
@@ -125,6 +179,21 @@ pub async fn update_employee(
 }
 
 /// DELETE /employees/:id — admin only.
+#[utoipa::path(
+    delete,
+    path = "/employees/{id}",
+    params(
+        ("id" = String, Path, description = "Employee ID")
+    ),
+    responses(
+        (status = 204, description = "Employee deleted successfully"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden"),
+        (status = 404, description = "Employee not found"),
+        (status = 500, description = "Internal server error"),
+    ),
+    security(("bearer_token" = []))
+)]
 pub async fn delete_employee(
     auth: AuthenticatedUser,
     State(state): State<AppState>,

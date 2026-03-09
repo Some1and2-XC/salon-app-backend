@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 
 /// Mirrors the frontend `AppointmentAvailability` class.
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
@@ -21,7 +21,7 @@ pub struct CreateAvailabilityRequest {
     pub end_time: i64,
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema, IntoParams)]
 pub struct QueryAvailabilityParams {
     /// Filter by employee.
     pub employee_id: Option<String>,

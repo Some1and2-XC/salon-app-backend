@@ -1,5 +1,5 @@
 use axum::{
-    extract::{FromRequestParts, State},
+    extract::FromRequestParts,
     http::{request::Parts, StatusCode},
     response::{IntoResponse, Response},
     Json,
@@ -82,7 +82,6 @@ pub struct AuthenticatedUser {
     pub is_admin: bool,
 }
 
-#[axum::async_trait]
 impl FromRequestParts<AppState> for AuthenticatedUser {
     type Rejection = AuthError;
 

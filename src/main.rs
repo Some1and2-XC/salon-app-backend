@@ -8,7 +8,6 @@ use axum::{
 };
 use dotenv::dotenv;
 use reqwest::Client;
-// use sqlx::postgres::PgPoolOptions;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use std::{env, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};

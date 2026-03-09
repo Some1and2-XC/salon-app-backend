@@ -8,7 +8,7 @@ Rust/Axum backend for the appointment booking system, with Firebase Authenticati
 |---|---|
 | Web framework | [Axum](https://github.com/tokio-rs/axum) 0.7 |
 | Async runtime | Tokio |
-| Database | PostgreSQL via [sqlx](https://github.com/launchbadge/sqlx) |
+| Database | Sqlite3 via [sqlx](https://github.com/launchbadge/sqlx) |
 | Auth | Firebase ID tokens (RS256 JWT) |
 | Migrations | sqlx built-in migrate! |
 
@@ -19,7 +19,6 @@ Rust/Axum backend for the appointment booking system, with Firebase Authenticati
 ### 1. Prerequisites
 
 - Rust (stable) — `rustup update stable`
-- PostgreSQL running locally (or a connection string to a remote instance)
 - A Firebase project with Authentication enabled
 
 ### 2. Environment
@@ -104,5 +103,5 @@ Admin-only endpoints additionally require `admin = true` on the user's DB row.
 
 - All timestamps are **Unix milliseconds** (`BIGINT`), matching the frontend.
 - `Phone` numbers are stored as plain `TEXT`; validation (7–15 digits) happens at the API boundary.
-- The `Appointment` validation rule from the frontend is enforced both in Rust code **and** as a PostgreSQL `CHECK` constraint.
+- The `Appointment` validation rule from the frontend is enforced both in Rust code **and** as a Sqlite3 `CHECK` constraint.
 - `AppointmentState` rows are seeded by the migration and should not be deleted.

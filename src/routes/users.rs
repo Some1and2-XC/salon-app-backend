@@ -4,10 +4,9 @@ use axum::{
     Json,
 };
 use chrono::Utc;
-use uuid::Uuid;
 
 use crate::{
-    middleware::auth::{AuthenticatedUser, AuthError},
+    middleware::auth::{AuthenticatedUser},
     models::user::{CreateUserRequest, UpdateUserRequest, User},
     AppState,
 };
@@ -39,7 +38,7 @@ pub async fn create_user(
     Json(req): Json<CreateUserRequest>,
 ) -> Result<(StatusCode, Json<User>), (StatusCode, Json<serde_json::Value>)> {
     let now = Utc::now().timestamp_millis();
-    let uid = Uuid::parse_str(&auth.uid).map_err(|_| bad_request("Invalid UID"))?;
+    let uid = &auth.uid;
 
     let user = sqlx::query_as!(
         User,
@@ -67,7 +66,7 @@ pub async fn update_me(
     Json(req): Json<UpdateUserRequest>,
 ) -> Result<Json<User>, (StatusCode, Json<serde_json::Value>)> {
     let now = Utc::now().timestamp_millis();
-    let uid = Uuid::parse_str(&auth.uid).map_err(|_| bad_request("Invalid UID"))?;
+    let uid = &auth.uid;
 
     let user = sqlx::query_as!(
         User,
@@ -98,7 +97,7 @@ pub async fn update_me(
 pub async fn get_user_by_id(
     auth: AuthenticatedUser,
     State(state): State<AppState>,
-    Path(uuid): Path<Uuid>,
+    Path(uuid): Path<String>,
 ) -> Result<Json<User>, (StatusCode, Json<serde_json::Value>)> {
     if !auth.is_admin {
         return Err(forbidden());

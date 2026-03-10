@@ -60,6 +60,9 @@
                 pkgs.ninja
                 pkgs.pkg-config
 
+                pkgs.eza
+                pkgs.fd
+
                 pkgs.pkgsCross.musl64.stdenv.cc
                 pkgs.pkgsCross.musl64.openssl
                 pkgs.pkgsCross.musl64.sqlite
@@ -74,6 +77,8 @@
                 export OPENSSL_INCLUDE_DIR="${pkgs.pkgsCross.musl64.openssl.dev}/include"
                 # Sets C compiler to be cross version
                 export CC_x86_64_unknown_linux_musl="${pkgs.pkgsCross.musl64.stdenv.cc}/bin/x86_64-unknown-linux-musl-cc"
+                # Forces static compilation
+                export RUSTFLAGS="-C target-feature=+crt-static -C link-self-contained=yes"
 
                 # Set the status
                 export PS1="\n\[\033[1;31m\](Salon Back-End --CROSS--) \[\033[1;34m\]\w\[\033[0m\] \n$ "
@@ -81,6 +86,10 @@
                 export TERM="xterm"
                 # Disables potential analytics from swagger-ui
                 export SCARF_ANALYTICS=false
+
+                alias ls=eza
+                alias find=fd
+
                 # Makes cargo work (Sets the proper version)
                 RUSTUP_TOOLCHAIN=1.85.0
               '';

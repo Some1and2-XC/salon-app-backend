@@ -104,6 +104,7 @@ async fn main() -> anyhow::Result<()> {
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()))
         // .merge(Redoc::with_url("/redoc", api.clone()))
+        .layer(CorsLayer::permissive()) // TODO fix this. This is bad.
         ;
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await?;

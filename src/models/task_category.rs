@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utoipa::ToSchema;
 
-/// Mirrors the frontend `AppointmentState` class and its constants.
+/// A category associated with a given task..
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, ToSchema)]
 pub struct TaskCategory {
     pub id: i64,

@@ -127,25 +127,27 @@ fn build_router(state: AppState) -> OpenApiRouter {
         .routes(routes!(routes::users::update_me))
         .routes(routes!(routes::users::create_user))
         .routes(routes!(routes::users::get_user_by_id)) // admin
-        // // ── Tasks ──────────────────────────────────────────────────────────
+        // ── Tasks ──────────────────────────────────────────────────────────
         .routes(routes!(routes::tasks::list_tasks))
         .routes(routes!(routes::tasks::create_task))
         .routes(routes!(routes::tasks::get_task))
         .routes(routes!(routes::tasks::update_task))
         .routes(routes!(routes::tasks::delete_task))
-        // // ── Employees ──────────────────────────────────────────────────────
+        // ── Task Categories ────────────────────────────────────────────────
+        .routes(routes!(routes::task_category::list_task_categories))
+        // ── Employees ──────────────────────────────────────────────────────
         .routes(routes!(routes::employees::list_employees))
         .routes(routes!(routes::employees::create_employee))
         .routes(routes!(routes::employees::get_employee))
         .routes(routes!(routes::employees::update_employee))
         .routes(routes!(routes::employees::delete_employee))
-        // // ── Appointments ───────────────────────────────────────────────────
+        // ── Appointments ───────────────────────────────────────────────────
         .routes(routes!(routes::appointments::list_appointments))
         .routes(routes!(routes::appointments::create_appointment))
         .routes(routes!(routes::appointments::get_appointment))
         .routes(routes!(routes::appointments::update_appointment))
         .routes(routes!(routes::appointments::delete_appointment))
-        // // ── Availability ───────────────────────────────────────────────────
+        // ── Availability ───────────────────────────────────────────────────
         .routes(routes!(routes::availability::list_availability))
         .routes(routes!(routes::availability::create_availability))
         .routes(routes!(routes::availability::delete_availability))

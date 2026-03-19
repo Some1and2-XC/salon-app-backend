@@ -147,7 +147,7 @@ pub async fn update_task(
                task_category_id = COALESCE($5, task_category_id),
                last_modified    = $6
            WHERE id = $1
-           RETURNING id, name, time_for_booking, price_cad_cent, task_category_id, date_created, last_modified"#,
+           RETURNING id as "id!", name as "name!", time_for_booking as "time_for_booking!", price_cad_cent, task_category_id, date_created, last_modified"#,
         id,
         req.name,
         req.time_for_booking,

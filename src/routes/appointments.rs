@@ -4,7 +4,7 @@ use axum::{
     Json,
 };
 use chrono::Utc;
-use uuid::Uuid;
+use uuid::{Timestamp, Uuid};
 
 use crate::{
     middleware::auth::AuthenticatedUser,
@@ -133,7 +133,7 @@ pub async fn create_appointment(
     }
 
     let now = Utc::now().timestamp_millis();
-    let new_uuid = Uuid::new_v4();
+    let new_uuid = Uuid::now_v7();
 
     let appt = sqlx::query_as!(
         Appointment,

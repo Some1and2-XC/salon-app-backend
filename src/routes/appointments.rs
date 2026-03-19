@@ -133,7 +133,7 @@ pub async fn create_appointment(
     }
 
     let now = Utc::now().timestamp_millis();
-    let new_uuid = Uuid::now_v7();
+    let new_uuid = Uuid::now_v7().to_string();
 
     let appt = sqlx::query_as!(
         Appointment,

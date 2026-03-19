@@ -66,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
         ;
 
     // Run pending migrations on startup.
-    sqlx::migrate!("./migrations").run(&db).await?;
+    // sqlx::migrate!("./migrations").run(&db).await?;
 
     let state = AppState {
         db,

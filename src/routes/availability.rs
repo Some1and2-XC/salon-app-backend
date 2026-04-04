@@ -5,15 +5,16 @@ use axum::{
 };
 
 use crate::{
-    middleware::auth::AuthenticatedUser,
-    models::appointment_availability::{
-        AppointmentAvailability, CreateAvailabilityRequest, QueryAvailabilityParams,
-    },
-    routes::users::{forbidden, internal_error, not_found},
-    AppState,
+    AppState, middleware::auth::AuthenticatedUser, models::{
+        appointment::Appointment,
+        appointment_availability::{
+            AppointmentAvailability, CreateAvailabilityRequest, QueryAvailabilityParams,
+        },
+        appointment_state::{self, AppointmentState, KnownState},
+    }, routes::users::{forbidden, internal_error, not_found}
 };
 
-/// GET /availability — authenticated users query open slots.
+/// GET /availability — authenticated users query open slots. Admins view all available slots.
 #[utoipa::path(
     get,
     path = "/availability",
@@ -26,10 +27,11 @@ use crate::{
     security(("bearer_token" = []))
 )]
 pub async fn list_availability(
-    _auth: AuthenticatedUser,
+    auth: AuthenticatedUser,
     State(state): State<AppState>,
     Query(params): Query<QueryAvailabilityParams>,
 ) -> Result<Json<Vec<AppointmentAvailability>>, (StatusCode, Json<serde_json::Value>)> {
+
     let slots = sqlx::query_as!(
         AppointmentAvailability,
         r#"SELECT id, employee_id, start_time, end_time
@@ -46,7 +48,87 @@ pub async fn list_availability(
     .await
     .map_err(internal_error)?;
 
-    Ok(Json(slots))
+    if auth.is_admin {
+        return Ok(Json(slots));
+    }
+
+    let appointments = sqlx::query_as!(
+        Appointment,
+        r#"SELECT uuid, user_uuid, task_id, employee_id, start_time, length,
+                  appointment_state_id, date_created, last_modified
+           FROM appointments
+           WHERE ($1 IS NULL OR employee_id = $1)
+             AND ($2 IS NULL OR appointment_state_id = $2)
+             AND ($3 IS NULL OR start_time >= $3)
+             AND ($4 IS NULL OR start_time <= $4)
+           ORDER BY start_time"#,
+        params.employee_id,
+        params.state_id,
+        params.from,
+        params.to,
+    )
+    .fetch_all(&state.db)
+    .await
+    .map_err(internal_error)?
+    .into_iter()
+    .filter(|v| KnownState::requires_employee(v.appointment_state_id))
+    .collect::<Vec<_>>()
+    ;
+
+    let result = slots
+        .into_iter()
+        .flat_map(|slot| {
+            let mut overlapping = appointments
+                .iter()
+                .filter_map(|appt| {
+                    let appt_end = appt.start_time + appt.length as i64;
+                    if appt.start_time < slot.end_time && appt_end > slot.start_time {
+                        Some((appt.start_time, appt_end))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            if overlapping.is_empty() {
+                return vec![slot.clone()];
+            }
+
+            overlapping.sort_by_key(|(start, _)| *start);
+
+            let mut free_slots = Vec::new();
+            let mut cursor = slot.start_time;
+
+            for (appt_start, appt_end) in overlapping {
+                let blocked_start = appt_start.max(slot.start_time);
+                let blocked_end = appt_end.min(slot.end_time);
+
+                if blocked_start > cursor {
+                    free_slots.push(AppointmentAvailability {
+                        id: slot.id,
+                        employee_id: slot.employee_id.clone(),
+                        start_time: cursor,
+                        end_time: blocked_start,
+                    });
+                }
+
+                cursor = cursor.max(blocked_end);
+            }
+
+            if cursor < slot.end_time {
+                free_slots.push(AppointmentAvailability {
+                    id: slot.id,
+                    employee_id: slot.employee_id.clone(),
+                    start_time: cursor,
+                    end_time: slot.end_time,
+                });
+            }
+
+            free_slots
+        })
+        .collect::<Vec<_>>();
+
+    Ok(Json(result))
 }
 
 /// POST /availability — admin only.

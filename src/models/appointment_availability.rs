@@ -25,6 +25,8 @@ pub struct CreateAvailabilityRequest {
 pub struct QueryAvailabilityParams {
     /// Filter by employee.
     pub employee_id: Option<String>,
+    /// The state appointments should be queried from.
+    pub state_id: Option<i64>,
     /// Only return slots that start on or after this timestamp (ms).
     pub from: Option<i64>,
     /// Only return slots that end on or before this timestamp (ms).

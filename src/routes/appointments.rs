@@ -207,11 +207,11 @@ pub async fn update_appointment(
     let new_state_id = req.appointment_state_id.unwrap_or(existing.appointment_state_id);
     let new_employee_id = req.employee_id.as_ref().or(existing.employee_id.as_ref());
 
-    if KnownState::requires_employee(new_state_id) && new_employee_id.is_none() {
-        return Err(bad_request(
-            "employee_id is required for Accepted/Confirmed/Completed appointments",
-        ));
-    }
+    // if KnownState::requires_employee(new_state_id) && new_employee_id.is_none() {
+    //     return Err(bad_request(
+    //         "employee_id is required for Accepted/Confirmed/Completed appointments",
+    //     ));
+    // }
 
     let now = Utc::now().timestamp_millis();
     let appt = sqlx::query_as!(

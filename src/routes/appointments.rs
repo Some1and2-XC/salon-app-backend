@@ -4,7 +4,7 @@ use axum::{
     Json,
 };
 use chrono::Utc;
-use uuid::{Timestamp, Uuid};
+use uuid::Uuid;
 
 use crate::{
     middleware::auth::AuthenticatedUser,
@@ -183,13 +183,16 @@ pub async fn update_appointment(
     Path(uuid): Path<Uuid>,
     Json(req): Json<UpdateAppointmentRequest>,
 ) -> Result<Json<Appointment>, (StatusCode, Json<serde_json::Value>)> {
+
+    let uuid_string = uuid.to_string();
+
     // Fetch existing to enforce ownership.
     let existing = sqlx::query_as!(
         Appointment,
         r#"SELECT uuid, user_uuid, task_id, employee_id, start_time, length,
                   appointment_state_id, date_created, last_modified
            FROM appointments WHERE uuid = $1"#,
-        uuid
+        uuid_string
     )
     .fetch_optional(&state.db)
     .await
@@ -222,7 +225,7 @@ pub async fn update_appointment(
            WHERE uuid = $1
            RETURNING uuid, user_uuid, task_id, employee_id, start_time, length,
                      appointment_state_id, date_created, last_modified"#,
-        uuid,
+        uuid_string,
         req.employee_id,
         req.start_time,
         req.length,

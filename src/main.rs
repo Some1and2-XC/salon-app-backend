@@ -5,7 +5,7 @@ mod routes;
 use dotenv::dotenv;
 use reqwest::Client;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
-use utoipa::openapi::security::HttpBuilder;
+use utoipa::openapi::{Server, security::HttpBuilder};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use std::{env, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
@@ -87,6 +87,10 @@ async fn main() -> anyhow::Result<()> {
     api.info.contact = Some(contact);
     api.info.license = None;
     api.info.terms_of_service = None;
+    api.servers = Some(vec![
+        Server::new("/api"),
+        // Server::new("/"),
+    ]);
 
     if api.components.is_none() {
         api.components = Some(utoipa::openapi::Components::new());
